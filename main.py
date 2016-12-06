@@ -22,7 +22,7 @@ browser = webdriver.PhantomJS("/usr/local/lib/phantomjs/bin/phantomjs", service_
 url_zipcode = "https://www.freemaptools.com/find-zip-codes-inside-radius.htm"
 url_grades = "http://education.ohio.gov/getattachment/Topics/Data/Report-Card-Resources/DISTRICT-GRADES.xlsx"
 input_filename = "district_grades_input.xlsx"
-output_filename = "district_grades_input.xlsx"
+output_filename = "district_grades_output.xlsx"
 
 
 def get_zipcodes(miles, zip_code):
@@ -65,7 +65,7 @@ def get_district_grades(zip_list):
 
     grades = []
     a = 0
-    W = px.load_workbook('')
+    W = px.load_workbook(input_filename)
     p = W.get_sheet_by_name(name='DISTRICT')
     header = []
     for row in p.iter_rows():
