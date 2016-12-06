@@ -5,7 +5,7 @@ import requests
 import openpyxl as px
 from selenium import webdriver
 
-
+# Argrument parser
 parser = argparse.ArgumentParser(description='Zipcode and radius')
 parser.add_argument('-r', action='store', dest='radius',
                     help='Radius in miles')
@@ -13,19 +13,30 @@ parser.add_argument('-z', action='store', dest='zip_code',
                     help='Zipcode')
 
 
+# Webdriver
 browser = webdriver.PhantomJS("/usr/local/lib/phantomjs/bin/phantomjs", service_args=[
                               '--ssl-protocol=any', '--ignore-ssl-errors=true', '--load-images=no'])
 
-browser.set_window_size(1600, 900)
 
+# Config variables
 url_zipcode = "https://www.freemaptools.com/find-zip-codes-inside-radius.htm"
 url_grades = "http://education.ohio.gov/getattachment/Topics/Data/Report-Card-Resources/DISTRICT-GRADES.xlsx"
+input_filename = "district_grades_input.xlsx"
+output_filename = "district_grades_input.xlsx"
 
 
 def get_zipcodes(miles, zip_code):
+    """Get The Zip Codes using miles and zipcode
+
+    :param miles: radius in miles
+    :type miles: float
+
+    :param zip_code: zipcode
+    :type zip_code: string
+
+    """
 
     browser.get(url_zipcode)
-
     radiusElem = browser.find_element_by_id('tb_radius_miles')
     radiusElem.send_keys(miles)
     zipCodeElem = browser.find_element_by_id('goto')
@@ -40,15 +51,21 @@ def get_zipcodes(miles, zip_code):
 
 
 def get_district_grades(zip_list):
+    """Download the grades file, apply filter and create a new file
+
+    :param zip_list: list of zipcodes
+    :type zip_list: list
+
+    """
 
     download_data = requests.get(url_grades).content
-    xls_file = open('district_grades_input.xlsx', 'wb')
+    xls_file = open(input_filename, 'wb')
     xls_file.write(download_data)
     xls_file.close()
 
     grades = []
     a = 0
-    W = px.load_workbook('district_grades_input.xlsx')
+    W = px.load_workbook('')
     p = W.get_sheet_by_name(name='DISTRICT')
     header = []
     for row in p.iter_rows():
@@ -71,17 +88,15 @@ def get_district_grades(zip_list):
             output_grades.append(i)
 
     wb = px.Workbook()
-    dest_filename = 'district_grades_output.xlsx'
     ws1 = wb.active
-    ws1.title = "district grades"
+    ws1.title = "District Grades"
     ws1.append(header)
     for orow in output_grades:
         ws1.append(orow)
-    wb.save(filename=dest_filename)
+    wb.save(filename=output_filename)
 
 
 if __name__ == "__main__":
-
     options = parser.parse_args()
     if options.radius and options.zip_code:
         zip_list = get_zipcodes(options.radius, options.zip_code)
