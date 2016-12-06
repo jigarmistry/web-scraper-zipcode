@@ -1,12 +1,10 @@
 import csv
 import time
-import json
 import argparse
 import requests
 import openpyxl as px
-from bs4 import BeautifulSoup
 from selenium import webdriver
-from operator import itemgetter
+
 
 parser = argparse.ArgumentParser(description='Zipcode and radius')
 parser.add_argument('-r', action='store', dest='radius',
@@ -52,11 +50,15 @@ def get_district_grades(zip_list):
     a = 0
     W = px.load_workbook('district_grades_input.xlsx')
     p = W.get_sheet_by_name(name='DISTRICT')
+    header = []
     for row in p.iter_rows():
         in_list = []
-        if a != 0:
-            for k in row:
+        for k in row:
+            if a != 0:
                 in_list.append(k.internal_value)
+            else:
+                header.append(k.internal_value)
+        if in_list != []:
             grades.append(in_list)
         a = a + 1
 
@@ -64,13 +66,19 @@ def get_district_grades(zip_list):
 
     output_grades = []
     for i in grades:
-        print id
+        zipr = i[5][0:5]
+        if zipr != "" and zipr in zip_list:
+            output_grades.append(i)
+
     wb = px.Workbook()
-    dest_filename = 'empty_book.xlsx'
+    dest_filename = 'district_grades_output.xlsx'
     ws1 = wb.active
-    ws1.title = "range names"
-    ws1.append([1, 2, 3])
+    ws1.title = "district grades"
+    ws1.append(header)
+    for orow in output_grades:
+        ws1.append(orow)
     wb.save(filename=dest_filename)
+
 
 if __name__ == "__main__":
 
@@ -82,8 +90,7 @@ if __name__ == "__main__":
         else:
             print ("No Zipcodes Founds")
     else:
+        print("")
         print("Please provide the zipcode/radius")
+        print("")
         parser.print_help()
-
-
-#free[u'44802', u'45890', u'43316', u'44853', u'44804', u'44830', u'44844', u'44809', u'45867', u'45839', u'43359', u'44817', u'45889', u'45840', u'44883', u'45814', u'43467', u'43457', u'44845', u'43330', u'44882', u'44841', u'43351', u'44815', u'43437', u'45872', u'43466', u'45897', u'43407', u'43413', u'45858', u'45816', u'45841', u'45881', u'44861', u'45843', u'43435', u'43406', u'43529', u'43451', u'45836', u'44860', u'45868', u'43462', u'44818', u'43323', u'44849', u'45835', u'44836', u'43431', u'43450', u'43511', u'43403', u'44867', u'44825', u'45817', u'43337', u'43420', u'45810', u'45877', u'43541', u'45815', u'43516', u'43442', u'43402', u'44820', u'44807', u'43569', u'43469', u'43443', u'43326', u'43414', u'43565', u'45859', u'44854', u'43332', u'44881']
